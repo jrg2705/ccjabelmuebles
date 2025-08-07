@@ -88,3 +88,110 @@ document.getElementById('precio').addEventListener('input', function () {
   const sugerencia = precio ? (precio * 0.25).toFixed(2) : 0;
   document.getElementById('sugerenciaInicial').textContent = `Inicial sugerida (25%): RD$ ${formatNumber(sugerencia)}`;
 });
+
+// ==== MODAL DE ACTUALIZACIÓN ====
+function showUpdateModal(installingWorker) {
+  const overlay = document.createElement("div");
+  overlay.style.position = "fixed";
+  overlay.style.top = "0";
+  overlay.style.left = "0";
+  overlay.style.width = "100%";
+  overlay.style.height = "100%";
+  overlay.style.backgroundColor = "rgba(0,0,0,0.6)";
+  overlay.style.display = "flex";
+  overlay.style.justifyContent = "center";
+  overlay.style.alignItems = "center";
+  overlay.style.zIndex = "9999";
+
+  const modal = document.createElement("div");
+  modal.style.backgroundColor = "#007bff";
+  modal.style.padding = "20px";
+  modal.style.borderRadius = "12px";
+  modal.style.maxWidth = "320px";
+  modal.style.textAlign = "center";
+  modal.style.color = "white";
+  modal.style.fontFamily = "Arial, sans-serif";
+  modal.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
+
+  const logo = document.createElement("img");
+  logo.src = "./logo.png";
+  logo.alt = "Jabel Muebles";
+  logo.style.width = "80px";
+  logo.style.height = "80px";
+  logo.style.borderRadius = "50%";
+  logo.style.objectFit = "cover";
+  logo.style.marginBottom = "10px";
+
+  const title = document.createElement("h2");
+  title.textContent = "Nueva versión disponible";
+  title.style.fontSize = "18px";
+  title.style.marginBottom = "10px";
+
+  const message = document.createElement("p");
+  message.textContent = "¿Quieres actualizar ahora para obtener las últimas mejoras?";
+  message.style.fontSize = "14px";
+  message.style.marginBottom = "20px";
+
+  const btnAccept = document.createElement("button");
+  btnAccept.textContent = "Actualizar";
+  btnAccept.style.backgroundColor = "#28a745";
+  btnAccept.style.color = "white";
+  btnAccept.style.border = "none";
+  btnAccept.style.padding = "10px 15px";
+  btnAccept.style.marginRight = "10px";
+  btnAccept.style.borderRadius = "8px";
+  btnAccept.style.cursor = "pointer";
+  btnAccept.onclick = () => {
+    installingWorker.postMessage("SKIP_WAITING");
+    document.body.removeChild(overlay);
+  };
+
+  const btnCancel = document.createElement("button");
+  btnCancel.textContent = "Después";
+  btnCancel.style.backgroundColor = "#dc3545";
+  btnCancel.style.color = "white";
+  btnCancel.style.border = "none";
+  btnCancel.style.padding = "10px 15px";
+  btnCancel.style.borderRadius = "8px";
+  btnCancel.style.cursor = "pointer";
+  btnCancel.onclick = () => {
+    document.body.removeChild(overlay);
+  };
+
+  modal.appendChild(logo);
+  modal.appendChild(title);
+  modal.appendChild(message);
+  modal.appendChild(btnAccept);
+  modal.appendChild(btnCancel);
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+}
+
+// ==== REGISTRO DEL SERVICE WORKER ====
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("./service-worker.js")
+      .then(registration => {
+        console.log("Service Worker registrado:", registration);
+
+        registration.onupdatefound = () => {
+          const installingWorker = registration.installing;
+          installingWorker.onstatechange = () => {
+            if (installingWorker.state === "installed") {
+              if (navigator.serviceWorker.controller) {
+                showUpdateModal(installingWorker);
+              } else {
+                console.log("Contenido cacheado por primera vez");
+              }
+            }
+          };
+        };
+      })
+      .catch(error => console.error("Error al registrar Service Worker:", error));
+
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      window.location.reload();
+    });
+  });
+}
