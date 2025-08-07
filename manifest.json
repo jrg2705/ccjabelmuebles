@@ -3,6 +3,7 @@
   "short_name": "JabelCalc",
   "start_url": "./index.html",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#007bff",
   "theme_color": "#007bff",
   "icons": [
