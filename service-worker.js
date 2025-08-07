@@ -5,7 +5,7 @@ self.addEventListener('install', e => {
     caches.open('calculadora-v1').then(cache => {
       return cache.addAll([
         './',
-        './Calculadora.html',
+        './index.html',
         './manifest.json',
         './icon-192.png',
         './icon-512.png'
