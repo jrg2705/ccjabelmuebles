@@ -1,52 +1,113 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Calculadora de Crédito</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="estilos.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Calculadora de Crédito - Jabel Muebles</title>
+
+  <!-- PWA manifest -->
   <link rel="manifest" href="manifest.json" />
-  <script src="https://kit.fontawesome.com/a2d9a66b8e.js" crossorigin="anonymous"></script>
+  <meta name="theme-color" content="#007bff" />
+  <link rel="icon" href="icon-192.png" />
+
+  <!-- estilos -->
+  <link rel="stylesheet" href="estilos.css" />
+
+  <!-- SheetJS para leer Excel en el navegador -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
-  <div class="contenedor">
-    <div class="logo-container">
-      <img src="logo.png" alt="Logo" class="logo" />
-    </div>
-    <h1>Calculadora de Crédito</h1>
-    <div class="tarjeta">
-      <label for="precio">Precio del Producto (RD$):</label>
-      <input type="number" id="precio" placeholder="Ej: 30000" />
+  <div class="container" id="appContainer">
+    <!-- header con logo centrado -->
+    <header class="header">
+        <img src="logo.png" alt="Jabel Muebles" id="logoHeader" style="background:none;padding:0;border-radius:0;" />
+        <h1>Calculadora de Crédito</h1>
+      </header>
 
-      <label for="inicial">Pago Inicial (opcional):</label>
-      <input type="number" id="inicial" placeholder="Ej: 7500" />
-      <div class="sugerencia" id="sugerenciaInicial">Inicial sugerida (25%): RD$ 0</div>
+    <!-- boton menu hamburger -->
+    <button id="btnMenu" class="hamburger" aria-label="Abrir menú">☰</button>
 
-      <label for="meses">Meses a pagar:</label>
-      <input type="number" id="meses" placeholder="Ej: 6" />
+    <!-- layout: form + aside (consulta) -->
+    <main class="main-grid">
+      <section class="form-section">
+        <div class="field">
+          <label for="precio">Precio del Producto</label>
+          <input type="text" id="precio" inputmode="decimal" placeholder="Ejemplo: 30,000.00" />
+        </div>
 
-      <label>
-        <input type="checkbox" id="esEmpleado" /> Calculo para empleados (4%)
-      </label>
+        <div class="field">
+          <label for="inicial">Pago Inicial (opcional)</label>
+          <input type="text" id="inicial" inputmode="decimal" placeholder="Ejemplo: 7,500.00" />
+        </div>
 
-      <div class="acciones">
-        <button onclick="calcularCredito()"><i class="fas fa-calculator"></i> Calcular</button>
-        <button onclick="limpiarCampos()"><i class="fas fa-eraser"></i> Limpiar</button>
-        <button onclick="toggleTema()"><i class="fas fa-adjust"></i> Tema</button>
-        <button onclick="compartirWhatsApp()"><i class="fab fa-whatsapp"></i> Compartir</button>
-      </div>
-    </div>
+        <div class="field small">
+          <label for="meses">Meses a Pagar</label>
+          <input type="number" id="meses" min="1" max="36" placeholder="6" />
+        </div>
 
-    <div id="resultado" class="resultado"></div>
+        <div class="field small" style="align-items:center;display:flex;gap:8px;">
+          <label for="esEmpleado" style="margin:0;">Calcular como empleado</label>
+          <input type="checkbox" id="esEmpleado" />
+        </div>
+
+        <div id="sugerenciaInicial" class="sugerencia">Inicial sugerida (25%): RD$ 0</div>
+
+        <div class="actions">
+          <button class="primary" id="btnCalcular">Calcular</button>
+          <button class="secondary" id="btnLimpiar">Limpiar</button>
+          <button class="secondary" id="btnCompartir">Compartir</button>
+          <button class="secondary" id="btnTema">Tema</button>
+        </div>
+
+        <div id="resultado" class="result" aria-live="polite"></div>
+
+      </section>
+
+      <!-- consulta dentro del contenedor principal (derecha en escritorio, abajo en móvil) -->
+      <aside class="consulta">
+        <h3>Consulta de Producto</h3>
+        <label for="consultaId">ID del producto</label>
+        <input type="text" id="consultaId" maxlength="8" inputmode="numeric" pattern="[0-9]*" placeholder="Ej: 1001" disabled />
+        <div id="consultaError" class="consulta-error oculto"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button id="btnConsultarProducto" class="primary small" disabled>Consultar</button>
+          <button id="btnCargarExcel" class="secondary small">Cargar .xlsx</button>
+        </div>
+        <div class="consulta-note">Puedes actualizar el archivo <code>CM.xlsx</code> en la raíz del sitio o usar "Cargar .xlsx".</div>
+      </aside>
+    </main>
   </div>
 
-  <div id="alerta" class="alerta oculto"></div>
+  <!-- modal de producto -->
+  <div id="modalProducto" class="modal oculto" role="dialog" aria-hidden="true">
+    <div class="modal-content">
+      <button class="modal-close" id="modalClose" aria-label="Cerrar">✕</button>
+      <div class="modal-header" style="background:#E2601B;color:white;padding:12px;border-radius:8px 8px 0 0;display:flex;align-items:center;gap:12px;">
+        <img src="logo.png" alt="logo" style="width:56px;height:56px;border-radius:8px;object-fit:cover;border:2px solid rgba(255,255,255,0.18)" />
+        <div>
+          <h2 style="margin:0;font-size:18px">Producto</h2>
+          <small style="opacity:0.95">Información del producto</small>
+        </div>
+      </div>
 
+      <div class="modal-body" style="padding:14px;">
+        <p><strong>ID:</strong> <span id="modalId">-</span></p>
+        <p><strong>Descripción:</strong> <span id="modalDesc">-</span></p>
+        <p><strong>Costo:</strong> <span id="modalCosto">-</span></p>
+        <div style="text-align:right;margin-top:12px;">
+          <button id="modalCloseBtn" class="secondary">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- input file invisible para cargar excel -->
+  <input type="file" id="fileProductos" accept=".xlsx" style="display:none" />
+
+  <!-- alerta -->
+  <div id="alerta" class="alerta oculto" role="status" aria-live="polite"></div>
+
+  <!-- script -->
   <script src="script.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js');
-    }
-  </script>
 </body>
 </html>
