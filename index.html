@@ -18,11 +18,11 @@
 </head>
 <body>
   <div class="container" id="appContainer">
-    <!-- header con logo centrado -->
+    <!-- header con logo centrado (sin contenedor extra) -->
     <header class="header">
-        <img src="logo.png" alt="Jabel Muebles" id="logoHeader" style="background:none;padding:0;border-radius:0;" />
-        <h1>Calculadora de Crédito</h1>
-      </header>
+      <img src="logo.png" alt="Jabel Muebles" id="logoHeader" />
+      <h1>Calculadora de Crédito</h1>
+    </header>
 
     <!-- boton menu hamburger -->
     <button id="btnMenu" class="hamburger" aria-label="Abrir menú">☰</button>
@@ -46,7 +46,7 @@
         </div>
 
         <div class="field small" style="align-items:center;display:flex;gap:8px;">
-          <label for="esEmpleado" style="margin:0;">Calcular como empleado</label>
+          <label for="esEmpleado" style="margin:0;">Calculo para empleados</label>
           <input type="checkbox" id="esEmpleado" />
         </div>
 

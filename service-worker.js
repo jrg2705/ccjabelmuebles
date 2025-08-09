@@ -26,7 +26,6 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   const req = event.request;
-  // network-first for CM.xlsx (try network then cache)
   if (req.url.endsWith('CM.xlsx')) {
     event.respondWith(
       fetch(req).then(resp => {

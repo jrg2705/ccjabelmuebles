@@ -1,4 +1,4 @@
-/* ---------- utilidades de formato ---------- */
+/* utilidades de formato */
 function formatNumber(num){
   return Number(num).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
@@ -10,12 +10,12 @@ function unformatNumber(str){
   return Number(cleaned) || 0;
 }
 
-/* ---------- estado ---------- */
+/* estado */
 let resumenCredito = "";
-let productos = []; // array de {id, descripcion, costo}
+let productos = [];
 let productosCargados = false;
 
-/* ---------- elementos ---------- */
+/* elementos */
 const precioInput = () => document.getElementById('precio');
 const inicialInput = () => document.getElementById('inicial');
 const mesesInput = () => document.getElementById('meses');
@@ -24,7 +24,7 @@ const sugerenciaEl = () => document.getElementById('sugerenciaInicial');
 const resultadoEl = () => document.getElementById('resultado');
 const alertaEl = () => document.getElementById('alerta');
 
-/* ---------- funciones principales ---------- */
+/* calcular crédito */
 function calcularCredito(){
   const precio = unformatNumber(precioInput().value);
   const inicial = unformatNumber(inicialInput().value);
@@ -32,17 +32,16 @@ function calcularCredito(){
   const esEmpleado = esEmpleadoInput().checked;
 
   if (isNaN(precio) || precio < 1){
-    mostrarAlerta("El precio debe ser mayor a 0.");
+    mostrarAlerta('El precio debe ser mayor a 0.');
     return;
   }
   if (isNaN(meses) || meses < 1 || meses > 36){
-    mostrarAlerta("Los meses deben estar entre 1 y 36.");
+    mostrarAlerta('Los meses deben estar entre 1 y 36.');
     return;
   }
 
   const saldo = precio - inicial;
   let tasaMensual = 0;
-
   if (esEmpleado) {
     tasaMensual = 0.04;
   } else if (precio <= 9999) {
@@ -59,20 +58,24 @@ function calcularCredito(){
   const pagoMensual = Math.ceil((totalConIntereses / meses) / 50) * 50;
   const precioCredito = (pagoMensual * meses) + inicial;
 
-  resumenCredito =
-`📄 Resumen del Crédito:
-- Precio del producto: RD$ ${formatNumber(precio)}
-- Inicial aplicado: RD$ ${formatNumber(inicial)}
-- Interés aplicado: ${(tasaMensual*100).toFixed(2)}%
+  const resumenPantalla = `
+- Precio contado: RD$ ${formatNumber(precio)}
 - Precio crédito: RD$ ${formatNumber(precioCredito)}
+- Inicial aplicado: RD$ ${formatNumber(inicial)}
 - Cuota mensual (${meses}): RD$ ${formatNumber(pagoMensual)}
-`;
+- Interés aplicado: ${(tasaMensual*100).toFixed(2)}%`;
 
-  resultadoEl().style.display = "block";
-  resultadoEl().innerHTML = `<h2>Resumen del Crédito</h2><p style="white-space:pre-line">${resumenCredito.replace(/\n/g,'<br>')}</p>`;
+  resumenCredito = `📄 Resumen del Crédito:
+- Precio contado: RD$ ${formatNumber(precio)}
+- Inicial aplicado: RD$ ${formatNumber(inicial)}
+- Cuota mensual (${meses}): RD$ ${formatNumber(pagoMensual)}
+- Precio crédito: RD$ ${formatNumber(precioCredito)}`;
+
+  resultadoEl().style.display = 'block';
+  resultadoEl().innerHTML = '<h2>Resumen del Crédito</h2><p style="white-space:pre-line">' + resumenPantalla + '</p>';
 }
 
-/* ---------- limpiar ---------- */
+/* limpiar */
 function limpiarCampos(){
   precioInput().value = '';
   inicialInput().value = '';
@@ -81,11 +84,11 @@ function limpiarCampos(){
   sugerenciaEl().textContent = 'Inicial sugerida (25%): RD$ 0';
   resultadoEl().style.display = 'none';
   resultadoEl().innerHTML = '';
-  resumenCredito = "";
+  resumenCredito = '';
 }
 
-/* ---------- alerta ---------- */
-function mostrarAlerta(msg, timeout = 3000){
+/* alertas */
+function mostrarAlerta(msg, timeout=3000){
   const a = alertaEl();
   a.textContent = msg;
   a.classList.remove('oculto');
@@ -93,22 +96,20 @@ function mostrarAlerta(msg, timeout = 3000){
   setTimeout(()=>{ a.style.display = 'none'; }, timeout);
 }
 
-/* ---------- compartir WhatsApp ---------- */
+/* compartir WhatsApp */
 function compartirWhatsApp(){
   if (!resumenCredito){
-    mostrarAlerta("Primero realiza un cálculo.");
+    mostrarAlerta('Primero realiza un cálculo.');
     return;
   }
   const url = `https://wa.me/?text=${encodeURIComponent(resumenCredito)}`;
-  window.open(url, "_blank");
+  window.open(url, '_blank');
 }
 
-/* ---------- formateo inputs en vivo ---------- */
+/* formateo inputs en vivo */
 function formatInputField(el){
   let v = el.value;
-  // permitir solo dígitos y punto
   v = v.replace(/[^\d.]/g,'');
-  // permitir un solo punto
   const parts = v.split('.');
   if (parts.length > 2) v = parts[0]+'.'+parts.slice(1).join('');
   const [intPart, decPart] = v.split('.');
@@ -116,21 +117,18 @@ function formatInputField(el){
   el.value = decPart !== undefined ? intFmt + '.' + decPart : intFmt;
 }
 
-/* ---------- sugerencia inicial automática ---------- */
+/* sugerencia inicial */
 function actualizarSugerencia(){
   const precio = unformatNumber(precioInput().value);
   const suger = precio ? (precio * 0.25) : 0;
   sugerenciaEl().textContent = `Inicial sugerida (25%): RD$ ${formatNumber(suger)}`;
 }
 
-/* ---------- productos: precarga CM.xlsx desde la raíz (fetch) ---------- */
+/* precarga CM.xlsx desde raíz (network-first) */
 async function precargarExcelPorDefecto(){
   try {
     const resp = await fetch('./CM.xlsx');
-    if (!resp.ok) {
-      console.log('No hay CM.xlsx por defecto en la raíz (ok).');
-      return;
-    }
+    if (!resp.ok) return;
     const ab = await resp.arrayBuffer();
     const workbook = XLSX.read(ab, {type:'array'});
     const ws = workbook.Sheets[workbook.SheetNames[0]];
@@ -140,23 +138,15 @@ async function precargarExcelPorDefecto(){
       const idKey = keys.find(k=>k.toLowerCase().includes('id')) || keys[0];
       const descKey = keys.find(k=>k.toLowerCase().includes('desc')) || keys[1] || '';
       const costoKey = keys.find(k=>k.toLowerCase().includes('cost')) || keys.find(k=>k.toLowerCase().includes('costo')) || keys[2] || '';
-      return {
-        id: String(r[idKey]).trim(),
-        descripcion: String(r[descKey] || '').trim(),
-        costo: Number(r[costoKey] || 0)
-      };
+      return { id: String(r[idKey]).trim(), descripcion: String(r[descKey]||'').trim(), costo: Number(r[costoKey]||0) };
     });
-    if (productos.length > 0){
-      productosCargados = true;
-      habilitarConsulta(true);
-      mostrarAlerta(`Productos cargados automáticamente: ${productos.length}`, 2500);
-    }
-  } catch (err) {
-    console.warn('Precarga fallida:', err);
+    if (productos.length>0){ productosCargados=true; habilitarConsulta(true); mostrarAlerta(`Productos cargados automáticamente: ${productos.length}`,2500); }
+  } catch (err){
+    console.warn('Precarga fallida',err);
   }
 }
 
-/* ---------- cargar excel via file input ---------- */
+/* leer excel desde file input */
 function leerExcelDesdeFile(file){
   return new Promise((resolve,reject)=>{
     const reader = new FileReader();
@@ -171,38 +161,24 @@ function leerExcelDesdeFile(file){
           const idKey = keys.find(k=>k.toLowerCase().includes('id')) || keys[0];
           const descKey = keys.find(k=>k.toLowerCase().includes('desc')) || keys[1] || '';
           const costoKey = keys.find(k=>k.toLowerCase().includes('cost')) || keys.find(k=>k.toLowerCase().includes('costo')) || keys[2] || '';
-          return {
-            id: String(r[idKey]).trim(),
-            descripcion: String(r[descKey] || '').trim(),
-            costo: Number(r[costoKey] || 0)
-          };
+          return { id: String(r[idKey]).trim(), descripcion: String(r[descKey]||'').trim(), costo: Number(r[costoKey]||0) };
         });
         resolve(arr);
-      } catch (err){
-        reject(err);
-      }
+      } catch (err){ reject(err); }
     };
     reader.readAsArrayBuffer(file);
   });
 }
 
-/* ---------- habilitar/deshabilitar consulta ---------- */
+/* habilitar consulta */
 function habilitarConsulta(enabled){
   const idInput = document.getElementById('consultaId');
   const btnConsultar = document.getElementById('btnConsultarProducto');
-  idInput.disabled = !enabled;
-  btnConsultar.disabled = !enabled;
+  if (idInput) idInput.disabled = !enabled;
+  if (btnConsultar) btnConsultar.disabled = !enabled;
 }
 
-/* ---------- forzar solo números en el campo ID ---------- */
-const idInput = document.getElementById('consultaId');
-if (idInput) {
-  idInput.addEventListener('input', () => {
-    idInput.value = idInput.value.replace(/\D/g, ''); // solo números
-  });
-}
-
-/* ---------- consultar producto ---------- */
+/* consultar producto */
 function consultarProductoPorId(){
   const id = (document.getElementById('consultaId').value || '').trim();
   const errorEl = document.getElementById('consultaError');
@@ -218,36 +194,37 @@ function consultarProductoPorId(){
     errorEl.classList.remove('oculto');
     return;
   }
-  // mostrar modal con datos
   document.getElementById('modalId').textContent = found.id;
   document.getElementById('modalDesc').textContent = found.descripcion || '-';
   document.getElementById('modalCosto').textContent = 'RD$ ' + formatNumber(found.costo || 0);
   abrirModalProducto();
 }
 
-/* ---------- modal ---------- */
+/* modal */
 function abrirModalProducto(){
   const mod = document.getElementById('modalProducto');
+  if (!mod) return;
   mod.classList.remove('oculto');
   mod.setAttribute('aria-hidden','false');
 }
 function cerrarModalProducto(){
   const mod = document.getElementById('modalProducto');
+  if (!mod) return;
   mod.classList.add('oculto');
   mod.setAttribute('aria-hidden','true');
 }
 
-/* ---------- tema ---------- */
+/* tema */
 function toggleTema(){
   document.body.classList.toggle('dark');
 }
 
-/* ---------- listeners DOMContentLoaded ---------- */
-document.addEventListener('DOMContentLoaded', ()=> {
-  // inputs
+/* DOMContentLoaded listeners */
+document.addEventListener('DOMContentLoaded', ()=>{
   const p = document.getElementById('precio');
   const i = document.getElementById('inicial');
   const fInput = document.getElementById('fileProductos');
+  const idInput = document.getElementById('consultaId');
 
   if (p){
     p.addEventListener('input', ()=> formatInputField(p));
@@ -258,7 +235,6 @@ document.addEventListener('DOMContentLoaded', ()=> {
       actualizarSugerencia();
     });
   }
-
   if (i){
     i.addEventListener('input', ()=> formatInputField(i));
     i.addEventListener('blur', ()=> {
@@ -267,86 +243,90 @@ document.addEventListener('DOMContentLoaded', ()=> {
     });
   }
 
+  // Forzar solo números en ID (en tiempo real)
+  if (idInput){
+    idInput.addEventListener('input', ()=> { idInput.value = idInput.value.replace(/\D/g,''); });
+  }
+
   // botones
-  document.getElementById('btnCalcular').addEventListener('click', calcularCredito);
-  document.getElementById('btnLimpiar').addEventListener('click', limpiarCampos);
-  document.getElementById('btnCompartir').addEventListener('click', compartirWhatsApp);
-  document.getElementById('btnTema').addEventListener('click', toggleTema);
+  const btnCalcular = document.getElementById('btnCalcular');
+  if (btnCalcular) btnCalcular.addEventListener('click', calcularCredito);
+  const btnLimpiar = document.getElementById('btnLimpiar');
+  if (btnLimpiar) btnLimpiar.addEventListener('click', limpiarCampos);
+  const btnCompartir = document.getElementById('btnCompartir');
+  if (btnCompartir) btnCompartir.addEventListener('click', compartirWhatsApp);
+  const btnTema = document.getElementById('btnTema');
+  if (btnTema) btnTema.addEventListener('click', toggleTema);
 
-  // consultas
-  document.getElementById('btnCargarExcel').addEventListener('click', ()=> fInput.click());
-  fInput.addEventListener('change', async (e)=>{
-    const file = e.target.files[0];
-    if (!file) return;
-    try {
-      const arr = await leerExcelDesdeFile(file);
-      productos = arr;
-      productosCargados = true;
-      habilitarConsulta(true);
-      mostrarAlerta('Productos cargados: ' + productos.length, 2500);
-    } catch (err){
-      mostrarAlerta('Error leyendo archivo. Usa un .xlsx válido.');
-      console.error(err);
-    } finally {
-      fInput.value = '';
-    }
-  });
+  // cargar excel
+  const btnCargar = document.getElementById('btnCargarExcel') || document.getElementById('btnCargarExcel');
+  if (btnCargar){
+    btnCargar.addEventListener('click', ()=> fInput.click());
+  }
+  if (fInput){
+    fInput.addEventListener('change', async (e)=>{
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const arr = await leerExcelDesdeFile(file);
+        productos = arr;
+        productosCargados = true;
+        habilitarConsulta(true);
+        mostrarAlerta('Productos cargados: ' + productos.length, 2500);
+      } catch (err){
+        mostrarAlerta('Error leyendo archivo. Usa un .xlsx válido.');
+        console.error(err);
+      } finally {
+        fInput.value = '';
+      }
+    });
+  }
 
-  // consulta id
-  document.getElementById('btnConsultarProducto').addEventListener('click', consultarProductoPorId);
+  const btnConsulta = document.getElementById('btnConsultarProducto');
+  if (btnConsulta) btnConsulta.addEventListener('click', consultarProductoPorId);
 
   // modal close
-  document.getElementById('modalClose').addEventListener('click', cerrarModalProducto);
-  document.getElementById('modalCloseBtn').addEventListener('click', cerrarModalProducto);
-  window.addEventListener('keydown', (e)=> {
-    if (e.key === 'Escape') cerrarModalProducto();
-  });
+  const modalClose = document.getElementById('modalClose');
+  const modalCloseBtn = document.getElementById('modalCloseBtn');
+  if (modalClose) modalClose.addEventListener('click', cerrarModalProducto);
+  if (modalCloseBtn) modalCloseBtn.addEventListener('click', cerrarModalProducto);
+  window.addEventListener('keydown', (e)=> { if (e.key === 'Escape') cerrarModalProducto(); });
 
-  // hamburger simple (abre/oculta panel con 2 funciones)
+  // hamburger menu
   const btnMenu = document.getElementById('btnMenu');
-  btnMenu.addEventListener('click', ()=> {
-    const menuHtml = `
-      <div style="position:absolute;right:16px;top:52px;background:#fff;color:#007bff;padding:8px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.12);z-index:9999;">
+  if (btnMenu){
+    btnMenu.addEventListener('click', ()=> {
+      const existing = document.getElementById('tempMenu');
+      if (existing){ existing.remove(); return; }
+      const menuHtml = `
+      <div id="tempMenu" style="position:absolute;right:16px;top:52px;background:#fff;color:#007bff;padding:8px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.12);z-index:9999;">
         <button id="menuLoad" style="display:block;width:100%;padding:8px;border:none;background:#007bff;color:#fff;border-radius:6px;margin-bottom:6px;cursor:pointer">Cargar productos (.xlsx)</button>
         <button id="menuFocus" style="display:block;width:100%;padding:8px;border:none;background:#e9ecef;color:#007bff;border-radius:6px;cursor:pointer">Ir a Consulta</button>
       </div>
-    `;
-    // remover si ya existe
-    const existing = document.getElementById('tempMenu');
-    if (existing){ existing.remove(); return; }
-    const div = document.createElement('div');
-    div.id = 'tempMenu';
-    div.innerHTML = menuHtml;
-    document.body.appendChild(div);
-
-    // handlers
-    document.getElementById('menuLoad').addEventListener('click', ()=> {
-      document.getElementById('fileProductos').click();
-      div.remove();
+      `;
+      const div = document.createElement('div');
+      div.innerHTML = menuHtml;
+      document.body.appendChild(div);
+      const menuLoad = document.getElementById('menuLoad');
+      const menuFocus = document.getElementById('menuFocus');
+      if (menuLoad) menuLoad.addEventListener('click', ()=> { document.getElementById('fileProductos').click(); div.remove(); });
+      if (menuFocus) menuFocus.addEventListener('click', ()=> { document.getElementById('consultaId').focus(); div.remove(); });
+      setTimeout(()=> {
+        window.addEventListener('click', function _closeMenu(ev){
+          if (!div.contains(ev.target) && ev.target !== btnMenu){
+            div.remove();
+            window.removeEventListener('click', _closeMenu);
+          }
+        });
+      }, 50);
     });
-    document.getElementById('menuFocus').addEventListener('click', ()=> {
-      document.getElementById('consultaId').focus();
-      div.remove();
-    });
+  }
 
-    // click fuera para cerrar
-    setTimeout(()=> {
-      window.addEventListener('click', function _closeMenu(ev){
-        if (!div.contains(ev.target) && ev.target !== btnMenu){
-          div.remove();
-          window.removeEventListener('click', _closeMenu);
-        }
-      });
-    }, 50);
-  });
-
-  // habilitar consulta si precarga funcionó
   habilitarConsulta(false);
-  // intentar precargar CM.xlsx si existe en la raíz
   precargarExcelPorDefecto();
 });
 
-/* ---------- registro service worker (se actualiza con modal simple) ---------- */
+/* service worker registration */
 if ('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
     navigator.serviceWorker.register('./service-worker.js').then(reg=>{
@@ -356,7 +336,6 @@ if ('serviceWorker' in navigator){
         installing.onstatechange = ()=>{
           if (installing.state === 'installed'){
             if (navigator.serviceWorker.controller){
-              // notificar al usuario
               if (confirm('Nueva versión disponible. Actualizar ahora?')) installing.postMessage('SKIP_WAITING');
             }
           }
