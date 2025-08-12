@@ -69,7 +69,9 @@ function calcularCredito(){
 - Precio contado: RD$ ${formatNumber(precio)}
 - Inicial aplicado: RD$ ${formatNumber(inicial)}
 - Cuota mensual (${meses}): RD$ ${formatNumber(pagoMensual)}
-- Precio crédito: RD$ ${formatNumber(precioCredito)}`;
+- Precio crédito: RD$ ${formatNumber(precioCredito)}
+
+"Gracias por preferirnos. Esperamos su visita."`;
 
   resultadoEl().style.display = 'block';
   resultadoEl().innerHTML = '<h2>Resumen del Crédito</h2><p style="white-space:pre-line">' + resumenPantalla + '</p>';
