@@ -74,5 +74,5 @@ body.dark{
 }
 body.dark .container{background:#0b2240;color:#fff}
 body.dark .field label{color:#cfe8ff}
-body.dark .field input{background:#071428;color:#cfe8ff;border:1px solid rgba(255,255,255,0.06)}
+body.dark .field input{background:#ffffff;color:#0b2540;border:1px solid #ddd}
 body.dark .consulta{background:#071428;color:#cfe8ff}

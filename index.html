@@ -36,7 +36,11 @@
         </div>
 
         <div class="field">
-          <label for="inicial">Pago Inicial (opcional)</label>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <label for="inicial" style="margin: 0;">Pago Inicial (opcional)</label>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.8;"><path d="M14.4297 5.92999L20.4997 12L14.4297 18.07" stroke="white" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path><path d="M3.5 12H20.33" stroke="white" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <div id="sugerenciaInicial" class="sugerencia" style="margin: 0; font-size: 12px;">Inicial sugerida (25%): RD$ 0</div>
+          </div>
           <input type="text" id="inicial" inputmode="decimal" placeholder="Ejemplo: 7,500.00" />
         </div>
 
@@ -49,8 +53,6 @@
           <label for="esEmpleado" style="margin:0;">Calculo para empleados</label>
           <input type="checkbox" id="esEmpleado" />
         </div>
-
-        <div id="sugerenciaInicial" class="sugerencia">Inicial sugerida (25%): RD$ 0</div>
 
         <div class="actions">
           <button class="primary" id="btnCalcular">Calcular</button>
